@@ -17,7 +17,7 @@ python setup.py build develop
 
 - ### Datasets
 Download dataset:
-
+https://drive.google.com/drive/folders/19MQ8-af9SyRr78sNKF3CD3biDM9CSBO8
 
 ```
 |- DeepSolo 
