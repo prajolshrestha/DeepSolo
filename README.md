@@ -4,7 +4,7 @@
 
 Python 3.8 + PyTorch 1.9.0 + CUDA 11.1 + Detectron2 (v0.6)
 ```
-git clone git@github.com:prajolshrestha/DeepSolo.git
+git clone https://github.com/prajolshrestha/DeepSolo.git
 cd DeepSolo
 conda create -n deepsolo python=3.8 -y
 conda activate deepsolo
@@ -16,6 +16,9 @@ python setup.py build develop
 
 
 - ### Datasets
+Download dataset:
+
+
 ```
 |- DeepSolo 
    |-datasets
@@ -25,12 +28,6 @@ python setup.py build develop
         |  └  map-anno
         |       |- train
         |       └  val
-        |- totaltext
-        |  |- train_images
-        |  |- test_images
-        |  |- train_37voc.json
-        |  |- train_96voc.json
-        |  └  test.json
 ```
 
 - ### Pretrained model weights
