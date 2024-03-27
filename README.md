@@ -38,9 +38,10 @@ Download and insert inside following path:
 
 https://onedrive.live.com/?authkey=%21AMIuN9rorTIEzPs&id=E534267B85818129%2125597&cid=E534267B85818129&parId=root&parQt=sharedby&o=OneUp
 
-Finetune command: 
+Finetune command:
+``` 
 $ python tools/train_net.py --config-file configs/ViTAEv2_S/Map/finetune_map.yaml --num-gpus 1
-
+```
 
 
 #### R-50:
@@ -50,4 +51,11 @@ Download and insert inside following path:
 https://onedrive.live.com/?authkey=%21AFGOhAtfJCL29hw&id=E534267B85818129%2125585&cid=E534267B85818129&parId=root&parQt=sharedby&o=OneUp
 
 Finetune command:
+```
 $ python tools/train_net.py --config-file configs/R_50/Map/finetune_map.yaml --num-gpus 1
+```
+
+- ### HPC jobfile
+```
+$ sbatch <jobfile_name>
+```
