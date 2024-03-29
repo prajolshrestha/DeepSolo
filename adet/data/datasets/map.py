@@ -76,8 +76,12 @@ def load_map_text_json(json_file, image_root, dataset_name=None, extra_annotatio
         objs = [] 
         for _, anno in enumerate(imgs_anns):
             text = anno["text"]
-            if text is None:
+            # out of bound text and char that leads to cost matrix error!
+            if voc_size_cfg == 96 and text in (None, "\u00a9", "ꟼ", "°", "é"):
                 continue
+            if voc_size_cfg == 37 and text in (None, "\u00a9", "ꟼ", "°", "&", "é"):
+                continue
+
             items = anno["items"]
             text_coordinates = [segment["points"] for segment in anno["items"]] # collect all the points of a word from different segments
             
@@ -205,14 +209,14 @@ def check_ground_truth(dataset_dict):
             text = anno["word"]
             #if len(text) == 1:# text with single instance
             for char in text:
-                if voc_size == 37 and char.lower() not in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9']:
+                if voc_size_cfg == 37 and char.lower() not in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9']:
                     out_of_bounds_instances.append((idx, char))
-                elif voc_size == 96 and char not in [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?','@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','{','|','}','~']:
+                elif voc_size_cfg == 96 and char not in [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?','@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','{','|','}','~']:
                     out_of_bounds_instances.append((idx, char))
     
 
     if out_of_bounds_instances:
-        print(f"Voc_size: {voc_size}")
+        print(f"Voc_size: {voc_size_cfg}")
         print("Out of bounds instances found: ")
         for idx, char in out_of_bounds_instances:
             print(f"Image {idx}, Char: {char}")
@@ -262,9 +266,10 @@ def visualize_bbox(dataset_dict):
 
 if __name__ == "__main__":
     
-    voc_size = 96 #37
+    voc_size_cfg = 96 #37
     num_pts_cfg = 25
 
+    #root = "datasets"
     json_file = 'maps/map-anno/train'
     image_root = 'maps/train'
     
@@ -274,7 +279,8 @@ if __name__ == "__main__":
         image_root = 'maps/val'
     
     # Register dataset
-    dataset_dict = load_map_text_json(json_file, image_root, voc_size, num_pts_cfg)
+    #dataset_dict = load_map_text_json(os.path.join(root,json_file), os.path.join(root,image_root) , voc_size, num_pts_cfg)
+    dataset_dict = load_map_text_json(json_file, image_root , voc_size_cfg, num_pts_cfg)
 
     check_ground_truth(dataset_dict)
     visualize_boundary_and_curve(dataset_dict)
