@@ -126,7 +126,8 @@ def load_map_text_json(json_file, image_root, dataset_name=None, extra_annotatio
                 "beziers": center_bezierpts,
                 "boundary": boundary,
                 "polyline": polyline,
-                "text": unicode_integer  
+                "text": unicode_integer,
+                "word": text # only for testing purpose  
             }
             objs.append(obj)
             #break
@@ -192,3 +193,89 @@ def text_to_int(text, voc_size):
         integer_list.extend([voc_size] * (25 - len(integer_list)))
 
     return integer_list[:25]
+
+
+###################################### Debug & Visualize ###################################################
+
+def check_ground_truth(dataset_dict):
+
+    out_of_bounds_instances = []
+    for idx, image_data in enumerate(dataset_dict):
+        for anno in image_data["annotations"]:
+            text = anno["word"]
+            #if len(text) == 1:# text with single instance
+            for char in text:
+                if voc_size == 37 and char.lower() not in ['a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','0','1','2','3','4','5','6','7','8','9']:
+                    out_of_bounds_instances.append((idx, char))
+                elif voc_size == 96 and char not in [' ','!','"','#','$','%','&','\'','(',')','*','+',',','-','.','/','0','1','2','3','4','5','6','7','8','9',':',';','<','=','>','?','@','A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z','[','\\',']','^','_','`','a','b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t','u','v','w','x','y','z','{','|','}','~']:
+                    out_of_bounds_instances.append((idx, char))
+    
+
+    if out_of_bounds_instances:
+        print(f"Voc_size: {voc_size}")
+        print("Out of bounds instances found: ")
+        for idx, char in out_of_bounds_instances:
+            print(f"Image {idx}, Char: {char}")
+    else: 
+        print("No out of bound instances found!")
+        
+                
+
+def visualize_boundary_and_curve(dataset_dict):
+    
+    #Visualize boundary and polyline and bezier curve
+    for d in random.sample(dataset_dict, 1):
+        img = cv2.imread(d["file_name"])
+        
+        # Draw boundaries, Bezier curves, and polyline
+        for ann in d["annotations"]:
+            boundary = ann["boundary"].astype(np.int32)
+            bezier_pts = ann["beziers"].astype(np.int32)
+            polyline = ann["polyline"].astype(np.int32)
+
+            # Draw boundary
+            cv2.polylines(img, [boundary], isClosed=True, color=(255, 0, 0), thickness=2)
+
+            # Draw Bezier curve
+            for i in range(0, len(bezier_pts), 4):
+                cv2.polylines(img, [bezier_pts[i:i+4]], isClosed=False, color=(0, 255, 0), thickness=2)
+
+            # Draw polyline
+            cv2.polylines(img, [polyline], isClosed=False, color=(0, 0, 255), thickness=2)
+
+        print(f'Plotting {d["file_name"]}')
+        cv2.imshow("image", img[:,:,::-1])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+def visualize_bbox(dataset_dict):
+    
+    # Visualize annotation (BBox)
+    map_metadata = MetadataCatalog.get("maps_val")
+    for d in random.sample(dataset_dict, 1):
+        img = cv2.imread(d["file_name"])
+        visualizer = Visualizer(img[:,:,::-1], metadata=map_metadata, scale=0.5)
+        out = visualizer.draw_dataset_dict(d) # random dict passed for output
+        cv2.imshow("image",out.get_image()[:,:,::-1])
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
+
+if __name__ == "__main__":
+    
+    voc_size = 96 #37
+    num_pts_cfg = 25
+
+    json_file = 'maps/map-anno/train'
+    image_root = 'maps/train'
+    
+    val = True #False
+    if val:
+        json_file = 'maps/map-anno/val'
+        image_root = 'maps/val'
+    
+    # Register dataset
+    dataset_dict = load_map_text_json(json_file, image_root, voc_size, num_pts_cfg)
+
+    check_ground_truth(dataset_dict)
+    visualize_boundary_and_curve(dataset_dict)
+    #visualize_bbox(dataset_dict)
