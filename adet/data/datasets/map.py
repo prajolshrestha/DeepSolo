@@ -75,17 +75,27 @@ def load_map_text_json(json_file, image_root, dataset_name=None, extra_annotatio
         ## Annotations
         objs = [] 
         for _, anno in enumerate(imgs_anns):
+            ## TEXT
             text = anno["text"]
             # out of bound text and char that leads to cost matrix error!
-            if voc_size_cfg == 96 and text in (None, "\u00a9", "ꟼ", "°", "é"):
+            # if voc_size_cfg == 96 and text in (None, "\u00a9", "ꟼ", "°", "é"):
+            #     continue
+            # if voc_size_cfg == 37 and text in (None, "\u00a9", "ꟼ", "°", "&", "é"):
+            #     continue
+
+            if text is None:
                 continue
-            if voc_size_cfg == 37 and text in (None, "\u00a9", "ꟼ", "°", "&", "é"):
+            # text to integer
+            unicode_integer = text_to_int(text, voc_size_cfg)
+            # Filter out of bound text instances
+            if voc_size_cfg == 37 and unicode_integer == [37] * num_pts_cfg:
+                continue
+            if voc_size_cfg == 96 and unicode_integer == [96] * num_pts_cfg:
                 continue
 
+            ##bbox
             items = anno["items"]
             text_coordinates = [segment["points"] for segment in anno["items"]] # collect all the points of a word from different segments
-            
-            ##bbox
             px = [point[0] for segment in text_coordinates for point in segment] # all x coordinates of a word
             py = [point[1] for segment in text_coordinates for point in segment] # all y coordinates of a word
 
@@ -99,7 +109,7 @@ def load_map_text_json(json_file, image_root, dataset_name=None, extra_annotatio
                 lower_pts = np.array(lower_pt)
                 upper_pts =np.array(upper_pt[::-1])
 
-           # case 2: characters are split up
+            # case 2: characters are split up
             else: 
                 for segment in items:
                     pts = segment["points"]
@@ -119,8 +129,6 @@ def load_map_text_json(json_file, image_root, dataset_name=None, extra_annotatio
             centerpoints = polyline 
             center_bezierpts, sample_points_center = compute_bezier(centerpoints)
 
-            ## TEXT
-            unicode_integer = text_to_int(text, voc_size_cfg)
    
             obj = {
                 "iscrowd": 0, 
@@ -147,7 +155,7 @@ def load_map_text_json(json_file, image_root, dataset_name=None, extra_annotatio
     return dataset_dicts
 
 def compute_lower_and_upper_pts(pts):
-    if len(pts) == 4: # Why not measure angle for all case? 
+    if len(pts) == 4: # Why not measure angle for all case? => Most of the cases has 4 points! This way is less error prone!
         lower_pts = pts[:2]
         upper_pts = pts[2:] 
 
@@ -193,10 +201,10 @@ def text_to_int(text, voc_size):
         char_to_int = lambda char: vocabulary.index(char)  if char in vocabulary else voc_size
         integer_list = [char_to_int(char) for char in text.lower()]
     
-    if len(integer_list) < 25:
-        integer_list.extend([voc_size] * (25 - len(integer_list)))
+    if len(integer_list) < num_pts_cfg:
+        integer_list.extend([voc_size] * (num_pts_cfg - len(integer_list)))
 
-    return integer_list[:25]
+    return integer_list[:num_pts_cfg]
 
 
 ###################################### Debug & Visualize ###################################################
@@ -223,8 +231,6 @@ def check_ground_truth(dataset_dict):
     else: 
         print("No out of bound instances found!")
         
-                
-
 def visualize_boundary_and_curve(dataset_dict):
     
     #Visualize boundary and polyline and bezier curve
