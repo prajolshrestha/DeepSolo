@@ -1,3 +1,5 @@
+# Evaluation of DeepSolo for Historical Maps
+
 ## Usage
 
 - ### Installation
@@ -12,6 +14,13 @@ pip install torch==1.9.0+cu111 torchvision==0.10.0+cu111 -f https://download.pyt
 pip install -r requirements.txt
 python -m pip install detectron2 -f https://dl.fbaipublicfiles.com/detectron2/wheels/cu111/torch1.9/index.html
 python setup.py build develop
+```
+
+- ### Training setup
+```
+The model was trained on 120K iterations with an ADAM optimizer with a weight decay of 0.0001, a learning rate of 0.00001, and a batch size of 1 image.
+The model was trained on a single NVIDIA A100 GPU on a machine with 40GB VRAM.
+The vocabulary size used was 37 and the number of object queries was 100.
 ```
 
 
